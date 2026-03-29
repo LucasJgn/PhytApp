@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhytoRef — Catalogue phytosanitaire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #1a5c2e;
+  --green-mid: #2d7a42;
+  --green-light: #4ca063;
+  --green-pale: #e8f4eb;
+  --amber: #e07b1a;
+  --amber-light: #fdf3e6;
+  --red: #c0392b;
+  --red-light: #fdecea;
+  --sand: #f5f0e8;
+  --ink: #1a1a18;
+  --ink-mid: #3d3d38;
+  --ink-soft: #7a7a72;
+  --border: #ddd8ce;
+  --white: #fefefe;
+  --radius: 12px;
+  --shadow: 0 2px 16px rgba(26,92,46,0.10);
+  --shadow-lg: 0 8px 40px rgba(26,92,46,0.15);
+}
+ 
+* { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--sand);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.5;
+}
+ 
+/* ── HEADER ── */
+header {
+  background: var(--green);
+  color: white;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+.header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 60px;
+}
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.35rem;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+.logo span { color: #7dd9a0; }
+.search-wrap {
+  flex: 1;
+  position: relative;
+}
+#main-search {
+  width: 100%;
+  padding: 9px 16px 9px 40px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  transition: background 0.2s;
+}
+#main-search::placeholder { color: rgba(255,255,255,0.6); }
+#main-search:focus { background: rgba(255,255,255,0.25); }
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.db-badge {
+  font-size: 0.72rem;
+  background: rgba(255,255,255,0.15);
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.3px;
+}
+ 
+/* ── TABS ── */
+.tabs {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 60px;
+  z-index: 90;
+}
+.tabs-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs-inner::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tab-btn.active {
+  color: var(--green);
+  border-bottom-color: var(--green);
+}
+.tab-btn:hover { color: var(--green-mid); }
+ 
+/* ── MAIN ── */
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 16px 80px;
+}
+ 
+/* ── LOADING ── */
+#loading-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--green);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  color: white;
+  gap: 20px;
+}
+.load-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 2rem;
+  letter-spacing: -1px;
+}
+.load-logo span { color: #7dd9a0; }
+.progress-bar-wrap {
+  width: 240px;
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  background: #7dd9a0;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.load-status {
+  font-size: 0.82rem;
+  opacity: 0.7;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+}
+ 
+/* ── PANELS ── */
+.panel { display: none; }
+.panel.active { display: block; }
+ 
+/* ── SEARCH RESULTS ── */
+.results-count {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+.results-count strong { color: var(--green); }
+ 
+.product-list { display: flex; flex-direction: column; gap: 8px; }
+ 
+.product-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.product-card:hover {
+  border-color: var(--green-mid);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+.product-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--green-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.product-card-body { flex: 1; min-width: 0; }
+.product-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.product-meta {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin-top: 2px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.product-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.badge-green { background: var(--green-pale); color: var(--green); }
+.badge-amber { background: var(--amber-light); color: var(--amber); }
+.badge-red { background: var(--red-light); color: var(--red); }
+.badge-gray { background: #f0ede8; color: var(--ink-soft); }
+.badge-blue { background: #e8f0fb; color: #2d5cc5; }
+ 
+.chevron { color: var(--ink-soft); flex-shrink: 0; }
+ 
+/* ── PRODUCT DETAIL ── */
+#detail-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  background: var(--sand);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+}
+#detail-panel.open { transform: translateX(0); }
+ 
+.detail-header {
+  background: var(--green);
+  color: white;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 60px;
+  flex-shrink: 0;
+}
+.back-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s;
+}
+.back-btn:hover { background: rgba(255,255,255,0.15); }
+.detail-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detail-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px 40px;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+}
+ 
+.detail-section {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.detail-section-header {
+  padding: 12px 16px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--ink-soft);
+  background: #faf9f6;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.detail-field {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+.detail-field:nth-child(even) { border-right: none; }
+.detail-field:last-child, .detail-field:nth-last-child(2) { border-bottom: none; }
+.detail-field-label {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+}
+.detail-field-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+.detail-full {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-full:last-child { border-bottom: none; }
+ 
+/* Alert boxes */
+.alert-box {
+  display: flex;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin: 6px 16px;
+  align-items: flex-start;
+}
+.alert-box:last-child { margin-bottom: 14px; }
+.alert-red { background: var(--red-light); color: var(--red); border: 1px solid rgba(192,57,43,0.2); }
+.alert-amber { background: var(--amber-light); color: #8a4a00; border: 1px solid rgba(224,123,26,0.2); }
+.alert-green { background: var(--green-pale); color: var(--green); border: 1px solid rgba(44,122,66,0.2); }
+ 
+/* Usage table */
+.usage-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.usage-item:last-child { border-bottom: none; }
+.usage-culture { font-weight: 600; font-size: 0.9rem; }
+.usage-target { font-size: 0.82rem; color: var(--ink-mid); }
+.usage-dose { font-size: 0.82rem; }
+.usage-dose strong { color: var(--green); }
+.usage-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+ 
+/* ── FILTER UI ── */
+.filter-bar {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.filter-label {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.filter-select {
+  flex: 1;
+  min-width: 140px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--sand);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  color: var(--ink);
+  outline: none;
+  cursor: pointer;
+}
+.filter-select:focus { border-color: var(--green); }
+ 
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--ink-soft);
+}
+.empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state p { font-size: 0.9rem; line-height: 1.6; }
+ 
+/* ── IFT PANEL ── */
+.ift-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 12px;
+}
+.ift-card h3 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 14px;
+  color: var(--green);
+}
+.ift-form { display: flex; flex-direction: column; gap: 10px; }
+.ift-result {
+  background: var(--green-pale);
+  border: 1px solid rgba(44,122,66,0.2);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  margin-top: 4px;
+}
+.ift-value {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 2.4rem;
+  color: var(--green);
+}
+.ift-label { font-size: 0.82rem; color: var(--ink-soft); }
+ 
+input[type=number], input[type=text] {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  width: 100%;
+  background: var(--sand);
+}
+input:focus { border-color: var(--green); }
+.btn-primary {
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-primary:hover { background: var(--green-mid); }
+ 
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 100;
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px 10px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.68rem;
+  gap: 3px;
+  transition: color 0.15s;
+}
+.nav-item.active { color: var(--green); }
+.nav-item svg { width: 22px; height: 22px; }
+.nav-dot {
+  width: 4px; height: 4px;
+  background: var(--green);
+  border-radius: 50%;
+  margin-top: 2px;
+  opacity: 0;
+}
+.nav-item.active .nav-dot { opacity: 1; }
+ 
+/* Mobile tweaks */
+@media (max-width: 600px) {
+  .detail-grid { grid-template-columns: 1fr; }
+  .detail-field { border-right: none; }
+  .detail-field:last-child { border-bottom: none; }
+  .detail-field:nth-last-child(2) { border-bottom: 1px solid var(--border); }
+  .tabs { display: none; }
+}
+</style>
+</head>
+<body>
+ 
+<!-- LOADING SCREEN -->
+<div id="loading-screen">
+  <div class="load-logo">Phyto<span>Ref</span></div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+  <div class="load-status" id="load-status">Connexion à la base E-Phy…</div>
+</div>
+ 
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo">Phyto<span>Ref</span></div>
+    <div class="search-wrap">
+      <svg class="search-icon" width="16" height="16" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="main-search" placeholder="Nom de produit, culture, cible…" autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="db-badge" id="db-badge">—</div>
+  </div>
+</header>
+ 
+<!-- TABS (desktop) -->
+<div class="tabs">
+  <div class="tabs-inner">
+    <button class="tab-btn active" onclick="showPanel('search')">🔍 Recherche</button>
+    <button class="tab-btn" onclick="showPanel('culture')">🌾 Par culture</button>
+    <button class="tab-btn" onclick="showPanel('ift')">📊 Calcul IFT</button>
+    <button class="tab-btn" onclick="showPanel('about')">ℹ️ À propos</button>
+  </div>
+</div>
+ 
+<!-- MAIN CONTENT -->
+<main>
+ 
+  <!-- SEARCH PANEL -->
+  <div class="panel active" id="panel-search">
+    <div id="search-hint" class="empty-state">
+      <div class="icon">🔬</div>
+      <p>Recherchez par <strong>nom commercial</strong>, <strong>n° AMM</strong>,<br>culture, maladie, ravageur ou substance active.</p>
+    </div>
+    <div id="results-wrap" style="display:none">
+      <div class="results-count" id="results-count"></div>
+      <div class="product-list" id="product-list"></div>
+    </div>
+  </div>
+ 
+  <!-- BY CULTURE PANEL -->
+  <div class="panel" id="panel-culture">
+    <div class="filter-bar">
+      <div class="filter-row">
+        <span class="filter-label">Culture</span>
+        <select class="filter-select" id="culture-select">
+          <option value="">— Toutes cultures —</option>
+        </select>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">Cible</span>
+        <select class="filter-select" id="cible-select">
+          <option value="">— Toutes cibles —</option>
+        </select>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">Filtre</span>
+        <select class="filter-select" id="type-select">
+          <option value="">Tous types</option>
+          <option value="FONGICIDE">Fongicide</option>
+          <option value="HERBICIDE">Herbicide</option>
+          <option value="INSECTICIDE">Insecticide</option>
+          <option value="MOLLUSCICIDE">Molluscicide</option>
+          <option value="RODENTICIDE">Rodenticide</option>
+          <option value="BIOCONTROLE">Biocontrôle</option>
+        </select>
+      </div>
+    </div>
+    <div class="results-count" id="culture-count"></div>
+    <div class="product-list" id="culture-list"></div>
+  </div>
+ 
+  <!-- IFT PANEL -->
+  <div class="panel" id="panel-ift">
+    <div class="ift-card">
+      <h3>Calcul de l'IFT traitement</h3>
+      <div class="ift-form">
+        <div>
+          <label style="font-size:0.82rem;color:var(--ink-soft);display:block;margin-bottom:4px">Dose utilisée (L ou kg/ha)</label>
+          <input type="number" id="ift-dose" placeholder="Ex: 1.5" min="0" step="0.01">
+        </div>
+        <div>
+          <label style="font-size:0.82rem;color:var(--ink-soft);display:block;margin-bottom:4px">Dose de référence homologuée (L ou kg/ha)</label>
+          <input type="number" id="ift-dose-ref" placeholder="Ex: 2.0" min="0" step="0.01">
+        </div>
+        <div>
+          <label style="font-size:0.82rem;color:var(--ink-soft);display:block;margin-bottom:4px">Surface traitée (ha)</label>
+          <input type="number" id="ift-surface" placeholder="Ex: 25" min="0" step="0.1">
+        </div>
+        <div>
+          <label style="font-size:0.82rem;color:var(--ink-soft);display:block;margin-bottom:4px">Surface totale de la campagne (ha)</label>
+          <input type="number" id="ift-total" placeholder="Ex: 180" min="0" step="0.1">
+        </div>
+        <button class="btn-primary" onclick="calcIFT()">Calculer l'IFT</button>
+        <div class="ift-result" id="ift-result" style="display:none">
+          <div class="ift-value" id="ift-value">—</div>
+          <div class="ift-label">IFT du traitement</div>
+          <div style="font-size:0.78rem;color:var(--ink-soft);margin-top:6px" id="ift-detail"></div>
+        </div>
+      </div>
+    </div>
+    <div class="ift-card" style="background:var(--green-pale);border-color:rgba(44,122,66,0.2)">
+      <h3 style="color:var(--green)">📋 Rappel réglementaire</h3>
+      <p style="font-size:0.85rem;line-height:1.7;color:var(--ink-mid)">
+        L'IFT (Indicateur de Fréquence de Traitement) mesure l'intensité d'utilisation des produits phytosanitaires.<br><br>
+        <strong>IFT = (Dose utilisée ÷ Dose de référence) × (Surface traitée ÷ Surface totale)</strong><br><br>
+        Un IFT de 1 correspond à une application à pleine dose sur l'ensemble de la surface. Le Conseil Stratégique Phytosanitaire (CSP) utilise l'IFT de l'exploitation comme base de diagnostic.
+      </p>
+    </div>
+  </div>
+ 
+  <!-- ABOUT PANEL -->
+  <div class="panel" id="panel-about">
+    <div class="detail-section">
+      <div class="detail-section-header">📡 Source des données</div>
+      <div class="detail-full">
+        <p style="font-size:0.88rem;line-height:1.7;color:var(--ink-mid)">
+          <strong>PhytoRef</strong> est basé sur les données ouvertes <strong>E-Phy de l'Anses</strong>, publiées sur data.gouv.fr sous Licence Ouverte.<br><br>
+          La base contient les produits phytopharmaceutiques, matières fertilisantes, adjuvants et mélanges couverts par une AMM (Autorisation de Mise sur le Marché) en France.<br><br>
+          <strong>Fréquence de mise à jour :</strong> hebdomadaire (mardi → mercredi).<br>
+          <strong>Source :</strong> «Données E-Phy - Anses»
+        </p>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-header">⚠️ Avertissement</div>
+      <div class="detail-full">
+        <p style="font-size:0.85rem;line-height:1.7;color:var(--ink-mid)">
+          Les données présentes dans E-Phy <strong>ne sont pas opposables</strong>. Seules les décisions publiées sur le registre électronique de l'Anses font foi.<br><br>
+          Les dérogations «120 jours» ne figurent pas dans cette base — elles relèvent du Ministère de l'Agriculture.<br><br>
+          Cette application est un outil d'aide à la décision. Vérifiez toujours l'étiquette du produit avant utilisation.
+        </p>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-header">🛠️ Application</div>
+      <div class="detail-grid">
+        <div class="detail-field">
+          <div class="detail-field-label">Version</div>
+          <div class="detail-field-value">1.0</div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-field-label">Produits chargés</div>
+          <div class="detail-field-value" id="about-count">—</div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-field-label">Dernière sync</div>
+          <div class="detail-field-value" id="about-sync">—</div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-field-label">Mode</div>
+          <div class="detail-field-value">Web / PWA</div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;padding:20px;font-size:0.78rem;color:var(--ink-soft)">
+      Données : E-Phy Anses — Licence Ouverte Etalab
+    </div>
+  </div>
+ 
+</main>
+ 
+<!-- BOTTOM NAV (mobile) -->
+<div class="bottom-nav">
+  <button class="nav-item active" id="nav-search" onclick="showPanel('search')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    Recherche
+    <div class="nav-dot"></div>
+  </button>
+  <button class="nav-item" id="nav-culture" onclick="showPanel('culture')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22V12M12 12C12 6 6 2 6 2s0 6 6 10M12 12c0-6 6-10 6-10s0 6-6 10"/></svg>
+    Cultures
+    <div class="nav-dot"></div>
+  </button>
+  <button class="nav-item" id="nav-ift" onclick="showPanel('ift')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 16 4-4 4 4 4-4"/></svg>
+    IFT
+    <div class="nav-dot"></div>
+  </button>
+  <button class="nav-item" id="nav-about" onclick="showPanel('about')">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+    À propos
+    <div class="nav-dot"></div>
+  </button>
+</div>
+ 
+<!-- PRODUCT DETAIL PANEL -->
+<div id="detail-panel">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDetail()">
+      <svg width="20" height="20" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+    </button>
+    <div class="detail-title" id="detail-title">—</div>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+ 
+<script>
+// ══════════════════════════════════════════════════════
+// DATA LAYER
+// ══════════════════════════════════════════════════════
+ 
+// E-Phy CSV URLs (CORS-enabled via data.gouv.fr)
+const EPHY_CSV_PRODUITS = 'https://www.data.gouv.fr/api/1/datasets/r/98f7cac6-6b29-4859-8739-51b825196959';
+// We'll use a CORS proxy or direct fetch; if blocked, we use embedded sample data
+ 
+// Storage keys
+const STORAGE_KEY = 'phytoref_v1';
+const SYNC_KEY = 'phytoref_sync';
+ 
+let DB = {
+  produits: [],    // [{amm, nom, fonction, statut, gamme, ...}]
+  usages: [],      // [{amm, culture, cible, dose_min, dose_max, dar, dre, znt, ...}]
+};
+ 
+let searchTimeout = null;
+let currentPanel = 'search';
+ 
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+ 
+async function init() {
+  setProgress(10, 'Vérification du cache local…');
+ 
+  // Try localStorage cache first
+  const cached = localStorage.getItem(STORAGE_KEY);
+  const syncDate = localStorage.getItem(SYNC_KEY);
+  const cacheAge = syncDate ? (Date.now() - parseInt(syncDate)) / (1000*3600) : 999;
+ 
+  if (cached && cacheAge < 168) { // 7 days
+    try {
+      DB = JSON.parse(cached);
+      setProgress(100, 'Base chargée depuis le cache');
+      setTimeout(hideLoading, 500);
+      postInit();
+      return;
+    } catch(e) {}
+  }
+ 
+  // Fetch from data.gouv.fr
+  setProgress(20, 'Téléchargement des données E-Phy…');
+  await loadFromEphy();
+  postInit();
+}
+ 
+function setProgress(pct, msg) {
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('load-status').textContent = msg;
+}
+ 
+function hideLoading() {
+  const el = document.getElementById('loading-screen');
+  el.style.transition = 'opacity 0.4s';
+  el.style.opacity = '0';
+  setTimeout(() => el.style.display = 'none', 400);
+}
+ 
+async function loadFromEphy() {
+  // Try to fetch the ZIP via a CORS proxy
+  const proxyUrls = [
+    'https://corsproxy.io/?url=https://www.data.gouv.fr/api/1/datasets/r/98f7cac6-6b29-4859-8739-51b825196959',
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.data.gouv.fr/api/1/datasets/r/98f7cac6-6b29-4859-8739-51b825196959'),
+  ];
+ 
+  // Since ZIP parsing is complex in browser, we fetch the CSV directly via the API
+  // The real endpoint for the CSV file (produits_usages) from data.gouv.fr
+  const CSV_USAGES_URL = 'https://www.data.gouv.fr/api/1/datasets/r/cb51d6e5-6c4f-4f1e-86eb-fc14fb56c3e5';
+  const CSV_PRODUITS_URL = 'https://www.data.gouv.fr/api/1/datasets/r/98f7cac6-6b29-4859-8739-51b825196959';
+ 
+  try {
+    setProgress(35, 'Chargement des produits…');
+ 
+    // Try direct fetch (may work depending on CORS headers from data.gouv.fr)
+    const res = await fetch(CSV_USAGES_URL, { mode: 'cors' });
+    if (res.ok) {
+      const text = await res.text();
+      setProgress(70, 'Analyse des données…');
+      parseCSV(text);
+      saveToCache();
+      setProgress(100, `${DB.produits.length} produits chargés`);
+      setTimeout(hideLoading, 600);
+      return;
+    }
+  } catch(e) {}
+ 
+  // Fallback: load embedded sample data for demonstration
+  setProgress(60, 'Chargement des données de démonstration…');
+  loadSampleData();
+  setProgress(100, `Base de démonstration (${DB.produits.length} produits)`);
+  setTimeout(hideLoading, 600);
+}
+ 
+function parseCSV(text) {
+  const lines = text.split('\n');
+  if (lines.length < 2) return;
+ 
+  const headers = lines[0].split(';').map(h => h.trim().replace(/"/g,'').toLowerCase());
+ 
+  const produitMap = {};
+  const usages = [];
+ 
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+ 
+    const cols = splitCSVLine(line);
+    if (cols.length < 5) continue;
+ 
+    const row = {};
+    headers.forEach((h, idx) => {
+      row[h] = (cols[idx] || '').replace(/^"|"$/g, '').trim();
+    });
+ 
+    // Build produit entry
+    const amm = row['numéro_amm'] || row['numero_amm'] || row['amm'] || row['num_amm'] || '';
+    const nom = row['nom_commercial'] || row['nom'] || '';
+    const fonction = row['fonction'] || row['type'] || '';
+    const statut = row['statut_produit'] || row['statut'] || '';
+ 
+    if (amm && nom && !produitMap[amm]) {
+      produitMap[amm] = {
+        amm, nom,
+        fonction: normalizeFunction(fonction),
+        statut,
+        gamme: row['gamme_usage'] || '',
+        titulaire: row['titulaire_amm'] || '',
+        ab: (row['mention_ab'] || '').toLowerCase().includes('oui'),
+        biocontrol: (row['biocontrole'] || '').toLowerCase().includes('oui'),
+        abeille: (row['mention_abeille'] || '').toLowerCase().includes('oui'),
+      };
+    }
+ 
+    // Build usage entry
+    const culture = row['culture'] || row['libelle_culture'] || '';
+    const cible = row['cible'] || row['libelle_cible'] || '';
+    const dose = row['dose_max'] || row['dose'] || '';
+    const dose_min = row['dose_min'] || '';
+    const dar = row['dar'] || row['délai_avant_récolte'] || '';
+    const dre = row['dre'] || '';
+    const znt = row['znt_aquatique'] || row['znt'] || '';
+    const unite = row['unité_dose'] || row['unite'] || 'L/ha';
+ 
+    if (amm && (culture || cible)) {
+      usages.push({ amm, nom, fonction: normalizeFunction(fonction), culture, cible, dose, dose_min, unite, dar, dre, znt, statut_usage: row['statut_usage'] || '' });
+    }
+  }
+ 
+  DB.produits = Object.values(produitMap);
+  DB.usages = usages;
+}
+ 
+function splitCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ';' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current);
+  return result;
+}
+ 
+function normalizeFunction(fn) {
+  const f = fn.toUpperCase();
+  if (f.includes('FONGI')) return 'FONGICIDE';
+  if (f.includes('HERBI')) return 'HERBICIDE';
+  if (f.includes('INSECTI')) return 'INSECTICIDE';
+  if (f.includes('MOLLUS')) return 'MOLLUSCICIDE';
+  if (f.includes('NEMATICI')) return 'NEMATICIDE';
+  if (f.includes('ACARI')) return 'ACARICIDE';
+  if (f.includes('RODENT')) return 'RODENTICIDE';
+  if (f.includes('REGULAT')) return 'RÉGULATEUR';
+  if (f.includes('BIOCON')) return 'BIOCONTROLE';
+  return fn || 'AUTRE';
+}
+ 
+function saveToCache() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+    localStorage.setItem(SYNC_KEY, Date.now().toString());
+  } catch(e) {}
+}
+ 
+// ── SAMPLE DATA (rich demonstration set for grandes cultures)
+function loadSampleData() {
+  DB.produits = [
+    { amm:'2090058', nom:'HORIZON EW', fonction:'FONGICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'BAYER CROPSCIENCE', ab:false, biocontrol:false, abeille:false },
+    { amm:'9800522', nom:'PROSARO', fonction:'FONGICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'BAYER CROPSCIENCE', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090081', nom:'ADEXAR', fonction:'FONGICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'BASF', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090244', nom:'ELATUS ERA', fonction:'FONGICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'SYNGENTA', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090195', nom:'PRIAXOR', fonction:'FONGICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'BASF', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090052', nom:'MEDAXTO', fonction:'FONGICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'SYNGENTA', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090310', nom:'ASCRA XPRO', fonction:'FONGICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'BAYER CROPSCIENCE', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090185', nom:'REVYSTAR XL', fonction:'FONGICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'BASF', ab:false, biocontrol:false, abeille:false },
+    { amm:'9800247', nom:'ATLANTIS WG', fonction:'HERBICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'BAYER CROPSCIENCE', ab:false, biocontrol:false, abeille:false },
+    { amm:'9800139', nom:'KERB FLO', fonction:'HERBICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'CORTEVA', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090030', nom:'FOXTROT', fonction:'HERBICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'BAYER CROPSCIENCE', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090088', nom:'ABAK', fonction:'HERBICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'BAYER CROPSCIENCE', ab:false, biocontrol:false, abeille:false },
+    { amm:'9800198', nom:'ROUNDUP STAR', fonction:'HERBICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'BAYER CROPSCIENCE', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090132', nom:'BOFIX', fonction:'HERBICIDE', statut:'Autorisé', gamme:'Prairies', titulaire:'CORTEVA', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090060', nom:'KARATE XPRO', fonction:'INSECTICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'SYNGENTA', ab:false, biocontrol:false, abeille:true },
+    { amm:'9800421', nom:'MAVRIK AQUAFLOW', fonction:'INSECTICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'FMC', ab:false, biocontrol:false, abeille:true },
+    { amm:'2090311', nom:'CORAGEN', fonction:'INSECTICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'CORTEVA', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090320', nom:'CARAMBA STAR', fonction:'FONGICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'BASF', ab:false, biocontrol:false, abeille:false },
+    { amm:'9800430', nom:'AMISTAR OPTI', fonction:'FONGICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'SYNGENTA', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090099', nom:'COLZOR TRIO', fonction:'HERBICIDE', statut:'Autorisé', gamme:'Oléagineux', titulaire:'ADAMA', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090155', nom:'BUTISAN GOLD', fonction:'HERBICIDE', statut:'Autorisé', gamme:'Oléagineux', titulaire:'BASF', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090177', nom:'LONTREL 100', fonction:'HERBICIDE', statut:'Autorisé', gamme:'Oléagineux', titulaire:'CORTEVA', ab:false, biocontrol:false, abeille:false },
+    { amm:'9800412', nom:'AVAUNT', fonction:'INSECTICIDE', statut:'Autorisé', gamme:'Oléagineux', titulaire:'CORTEVA', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090400', nom:'COSSADE', fonction:'HERBICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'FMC', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090290', nom:'DUPLOSANE HX', fonction:'HERBICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'SYNGENTA', ab:false, biocontrol:false, abeille:false },
+    { amm:'9800310', nom:'CALLISTO', fonction:'HERBICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'SYNGENTA', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090210', nom:'LAUDIS', fonction:'HERBICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'BAYER CROPSCIENCE', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090340', nom:'MILAGRO', fonction:'HERBICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'SYNGENTA', ab:false, biocontrol:false, abeille:false },
+    { amm:'9800280', nom:'TIVANO', fonction:'FONGICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'BAYER CROPSCIENCE', ab:false, biocontrol:false, abeille:false },
+    { amm:'2090450', nom:'TALIUS', fonction:'FONGICIDE', statut:'Autorisé', gamme:'Grandes cultures', titulaire:'CORTEVA', ab:false, biocontrol:false, abeille:false },
+  ];
+ 
+  DB.usages = [
+    // HORIZON EW
+    { amm:'2090058', nom:'HORIZON EW', fonction:'FONGICIDE', culture:'Blé tendre', cible:'Piétin verse', dose:'1.0', dose_min:'0.75', unite:'L/ha', dar:'35', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    { amm:'2090058', nom:'HORIZON EW', fonction:'FONGICIDE', culture:'Blé tendre', cible:'Rouille brune', dose:'1.0', dose_min:'0.75', unite:'L/ha', dar:'35', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    { amm:'2090058', nom:'HORIZON EW', fonction:'FONGICIDE', culture:'Blé tendre', cible:'Oïdium', dose:'1.0', dose_min:'0.75', unite:'L/ha', dar:'35', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    { amm:'2090058', nom:'HORIZON EW', fonction:'FONGICIDE', culture:'Orge', cible:'Rhynchosporiose', dose:'1.0', dose_min:'0.75', unite:'L/ha', dar:'35', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    // PROSARO
+    { amm:'9800522', nom:'PROSARO', fonction:'FONGICIDE', culture:'Blé tendre', cible:'Septoriose', dose:'1.0', dose_min:'0.8', unite:'L/ha', dar:'28', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    { amm:'9800522', nom:'PROSARO', fonction:'FONGICIDE', culture:'Blé tendre', cible:'Fusariose des épis', dose:'1.0', dose_min:'0.8', unite:'L/ha', dar:'28', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    { amm:'9800522', nom:'PROSARO', fonction:'FONGICIDE', culture:'Blé dur', cible:'Septoriose', dose:'1.0', dose_min:'0.8', unite:'L/ha', dar:'28', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    { amm:'9800522', nom:'PROSARO', fonction:'FONGICIDE', culture:'Orge', cible:'Helminthosporiose', dose:'1.0', dose_min:'0.8', unite:'L/ha', dar:'28', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    // ADEXAR
+    { amm:'2090081', nom:'ADEXAR', fonction:'FONGICIDE', culture:'Blé tendre', cible:'Septoriose', dose:'1.5', dose_min:'1.0', unite:'L/ha', dar:'28', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    { amm:'2090081', nom:'ADEXAR', fonction:'FONGICIDE', culture:'Blé tendre', cible:'Rouille jaune', dose:'1.5', dose_min:'1.0', unite:'L/ha', dar:'28', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    { amm:'2090081', nom:'ADEXAR', fonction:'FONGICIDE', culture:'Orge', cible:'Rynchosporiose', dose:'1.5', dose_min:'1.0', unite:'L/ha', dar:'28', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    { amm:'2090081', nom:'ADEXAR', fonction:'FONGICIDE', culture:'Maïs', cible:'Helminthosporiose', dose:'1.5', dose_min:'1.0', unite:'L/ha', dar:'28', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    // MEDAXTO
+    { amm:'2090052', nom:'MEDAXTO', fonction:'FONGICIDE', culture:'Blé tendre', cible:'Septoriose', dose:'1.2', dose_min:'0.8', unite:'L/ha', dar:'28', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    { amm:'2090052', nom:'MEDAXTO', fonction:'FONGICIDE', culture:'Blé tendre', cible:'Rouille brune', dose:'1.2', dose_min:'0.8', unite:'L/ha', dar:'28', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    { amm:'2090052', nom:'MEDAXTO', fonction:'FONGICIDE', culture:'Orge', cible:'Oïdium', dose:'1.2', dose_min:'0.8', unite:'L/ha', dar:'28', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    // ATLANTIS WG
+    { amm:'9800247', nom:'ATLANTIS WG', fonction:'HERBICIDE', culture:'Blé tendre', cible:'Graminées (vulpin, ray-grass)', dose:'0.4', dose_min:'0.3', unite:'kg/ha', dar:'0', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    { amm:'9800247', nom:'ATLANTIS WG', fonction:'HERBICIDE', culture:'Blé dur', cible:'Graminées (vulpin, ray-grass)', dose:'0.4', dose_min:'0.3', unite:'kg/ha', dar:'0', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    { amm:'9800247', nom:'ATLANTIS WG', fonction:'HERBICIDE', culture:'Blé tendre', cible:'Dicotylédones annuelles', dose:'0.4', dose_min:'0.3', unite:'kg/ha', dar:'0', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    // COLZOR TRIO
+    { amm:'2090099', nom:'COLZOR TRIO', fonction:'HERBICIDE', culture:'Colza', cible:'Dicotylédones annuelles', dose:'3.0', dose_min:'2.0', unite:'L/ha', dar:'0', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    { amm:'2090099', nom:'COLZOR TRIO', fonction:'HERBICIDE', culture:'Colza', cible:'Graminées annuelles', dose:'3.0', dose_min:'2.0', unite:'L/ha', dar:'0', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    // BUTISAN GOLD
+    { amm:'2090155', nom:'BUTISAN GOLD', fonction:'HERBICIDE', culture:'Colza', cible:'Graminées annuelles', dose:'2.5', dose_min:'1.5', unite:'L/ha', dar:'0', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    { amm:'2090155', nom:'BUTISAN GOLD', fonction:'HERBICIDE', culture:'Colza', cible:'Dicotylédones annuelles', dose:'2.5', dose_min:'1.5', unite:'L/ha', dar:'0', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    // KARATE XPRO
+    { amm:'2090060', nom:'KARATE XPRO', fonction:'INSECTICIDE', culture:'Blé tendre', cible:'Pucerons', dose:'0.075', dose_min:'0.05', unite:'L/ha', dar:'14', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    { amm:'2090060', nom:'KARATE XPRO', fonction:'INSECTICIDE', culture:'Colza', cible:'Méligèthes', dose:'0.075', dose_min:'0.05', unite:'L/ha', dar:'14', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    { amm:'2090060', nom:'KARATE XPRO', fonction:'INSECTICIDE', culture:'Orge', cible:'Cicadelles', dose:'0.075', dose_min:'0.05', unite:'L/ha', dar:'14', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    // CALLISTO
+    { amm:'9800310', nom:'CALLISTO', fonction:'HERBICIDE', culture:'Maïs', cible:'Dicotylédones annuelles', dose:'1.5', dose_min:'0.75', unite:'L/ha', dar:'0', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    // LAUDIS
+    { amm:'2090210', nom:'LAUDIS', fonction:'HERBICIDE', culture:'Maïs', cible:'Graminées (panic, chiendent)', dose:'2.25', dose_min:'1.5', unite:'L/ha', dar:'0', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    { amm:'2090210', nom:'LAUDIS', fonction:'HERBICIDE', culture:'Maïs', cible:'Dicotylédones annuelles', dose:'2.25', dose_min:'1.5', unite:'L/ha', dar:'0', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    // MILAGRO
+    { amm:'2090340', nom:'MILAGRO', fonction:'HERBICIDE', culture:'Maïs', cible:'Graminées (panic, digitaire)', dose:'1.0', dose_min:'0.75', unite:'L/ha', dar:'0', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    // AVAUNT
+    { amm:'9800412', nom:'AVAUNT', fonction:'INSECTICIDE', culture:'Colza', cible:'Altises adultes', dose:'0.125', dose_min:'0.125', unite:'L/ha', dar:'14', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    { amm:'9800412', nom:'AVAUNT', fonction:'INSECTICIDE', culture:'Colza', cible:'Charançon de la tige', dose:'0.125', dose_min:'0.125', unite:'L/ha', dar:'14', dre:'6', znt:'20', statut_usage:'Autorisé' },
+    // CARAMBA STAR
+    { amm:'2090320', nom:'CARAMBA STAR', fonction:'FONGICIDE', culture:'Blé tendre', cible:'Septoriose', dose:'1.25', dose_min:'1.0', unite:'L/ha', dar:'28', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    { amm:'2090320', nom:'CARAMBA STAR', fonction:'FONGICIDE', culture:'Blé tendre', cible:'Fusariose des épis', dose:'1.25', dose_min:'1.0', unite:'L/ha', dar:'28', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    { amm:'2090320', nom:'CARAMBA STAR', fonction:'FONGICIDE', culture:'Colza', cible:'Sclerotinia', dose:'1.5', dose_min:'1.25', unite:'L/ha', dar:'35', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    // ASCRA XPRO
+    { amm:'2090310', nom:'ASCRA XPRO', fonction:'FONGICIDE', culture:'Blé tendre', cible:'Septoriose', dose:'1.0', dose_min:'0.75', unite:'L/ha', dar:'28', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    { amm:'2090310', nom:'ASCRA XPRO', fonction:'FONGICIDE', culture:'Blé tendre', cible:'Rouille jaune', dose:'1.0', dose_min:'0.75', unite:'L/ha', dar:'28', dre:'6', znt:'5', statut_usage:'Autorisé' },
+    { amm:'2090310', nom:'ASCRA XPRO', fonction:'FONGICIDE', culture:'Orge', cible:'Rhynchosporiose', dose:'1.0', dose_min:'0.75', unite:'L/ha', dar:'28', dre:'6', znt:'5', statut_usage:'Autorisé' },
+  ];
+}
+ 
+function postInit() {
+  // Update UI
+  const count = DB.produits.length;
+  document.getElementById('db-badge').textContent = `${count} produits`;
+  document.getElementById('about-count').textContent = count;
+ 
+  const sync = localStorage.getItem(SYNC_KEY);
+  if (sync) {
+    const d = new Date(parseInt(sync));
+    document.getElementById('about-sync').textContent = d.toLocaleDateString('fr-FR');
+  }
+ 
+  // Populate culture dropdown
+  populateCultureDropdown();
+ 
+  // Setup search
+  document.getElementById('main-search').addEventListener('input', onSearch);
+  document.getElementById('culture-select').addEventListener('change', onCultureFilter);
+  document.getElementById('cible-select').addEventListener('change', onCultureFilter);
+  document.getElementById('type-select').addEventListener('change', onCultureFilter);
+}
+ 
+// ══════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════
+ 
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+ 
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+ 
+  const tabIdx = ['search','culture','ift','about'].indexOf(name);
+  if (tabIdx >= 0) {
+    document.querySelectorAll('.tab-btn')[tabIdx].classList.add('active');
+    document.querySelectorAll('.nav-item')[tabIdx].classList.add('active');
+  }
+ 
+  currentPanel = name;
+  if (name === 'culture') onCultureFilter();
+}
+ 
+// ══════════════════════════════════════════════════════
+// SEARCH
+// ══════════════════════════════════════════════════════
+ 
+function onSearch() {
+  clearTimeout(searchTimeout);
+  const q = document.getElementById('main-search').value.trim();
+  if (q.length < 2) {
+    document.getElementById('search-hint').style.display = 'block';
+    document.getElementById('results-wrap').style.display = 'none';
+    return;
+  }
+  searchTimeout = setTimeout(() => runSearch(q), 180);
+}
+ 
+function runSearch(q) {
+  const ql = q.toLowerCase();
+  const tokens = ql.split(/\s+/);
+ 
+  // Search in produits + usages
+  const matchedAMMs = new Set();
+  const scores = {};
+ 
+  // Match produits by nom, AMM
+  DB.produits.forEach(p => {
+    let score = 0;
+    const nameL = p.nom.toLowerCase();
+    const ammL = p.amm.toLowerCase();
+    tokens.forEach(t => {
+      if (nameL.startsWith(t)) score += 4;
+      else if (nameL.includes(t)) score += 2;
+      if (ammL.includes(t)) score += 3;
+      if (p.fonction.toLowerCase().includes(t)) score += 1;
+    });
+    if (score > 0) { matchedAMMs.add(p.amm); scores[p.amm] = score; }
+  });
+ 
+  // Match usages by culture, cible
+  DB.usages.forEach(u => {
+    let score = 0;
+    const cult = u.culture.toLowerCase();
+    const cible = u.cible.toLowerCase();
+    tokens.forEach(t => {
+      if (cult.includes(t)) score += 2;
+      if (cible.includes(t)) score += 2;
+    });
+    if (score > 0) {
+      matchedAMMs.add(u.amm);
+      scores[u.amm] = (scores[u.amm] || 0) + score;
+    }
+  });
+ 
+  const sorted = [...matchedAMMs]
+    .sort((a, b) => (scores[b] || 0) - (scores[a] || 0))
+    .slice(0, 40);
+ 
+  renderProductList(sorted, 'product-list', 'results-count');
+  document.getElementById('search-hint').style.display = sorted.length ? 'none' : 'block';
+  document.getElementById('results-wrap').style.display = sorted.length ? 'block' : 'none';
+}
+ 
+// ══════════════════════════════════════════════════════
+// CULTURE FILTER
+// ══════════════════════════════════════════════════════
+ 
+function populateCultureDropdown() {
+  const cultures = [...new Set(DB.usages.map(u => u.culture).filter(Boolean))].sort();
+  const sel = document.getElementById('culture-select');
+  cultures.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+ 
+function onCultureFilter() {
+  const culture = document.getElementById('culture-select').value;
+  const type = document.getElementById('type-select').value;
+ 
+  // Update cible dropdown
+  const cibleSel = document.getElementById('cible-select');
+  const prevCible = cibleSel.value;
+  while (cibleSel.options.length > 1) cibleSel.remove(1);
+ 
+  const filteredUsages = DB.usages.filter(u => {
+    if (culture && u.culture !== culture) return false;
+    if (type && u.fonction !== type) return false;
+    return true;
+  });
+ 
+  const cibles = [...new Set(filteredUsages.map(u => u.cible).filter(Boolean))].sort();
+  cibles.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    cibleSel.appendChild(opt);
+  });
+  if (cibles.includes(prevCible)) cibleSel.value = prevCible;
+ 
+  const cible = cibleSel.value;
+ 
+  const finalUsages = filteredUsages.filter(u => !cible || u.cible === cible);
+  const amms = [...new Set(finalUsages.map(u => u.amm))];
+ 
+  renderProductList(amms, 'culture-list', 'culture-count');
+}
+ 
+// ══════════════════════════════════════════════════════
+// RENDER HELPERS
+// ══════════════════════════════════════════════════════
+ 
+function renderProductList(amms, listId, countId) {
+  const list = document.getElementById(listId);
+  const countEl = document.getElementById(countId);
+  list.innerHTML = '';
+  countEl.innerHTML = `<strong>${amms.length}</strong> produit${amms.length > 1 ? 's' : ''} trouvé${amms.length > 1 ? 's' : ''}`;
+ 
+  if (!amms.length) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>Aucun produit trouvé pour ces critères.</p></div>';
+    return;
+  }
+ 
+  amms.forEach(amm => {
+    const p = DB.produits.find(x => x.amm === amm);
+    if (!p) return;
+    const card = createProductCard(p);
+    card.onclick = () => openDetail(amm);
+    list.appendChild(card);
+  });
+}
+ 
+function createProductCard(p) {
+  const div = document.createElement('div');
+  div.className = 'product-card';
+ 
+  const icons = { FONGICIDE:'🍄', HERBICIDE:'🌿', INSECTICIDE:'🐛', MOLLUSCICIDE:'🐌', ACARICIDE:'🕷️', NEMATICIDE:'🪱', REGULATEUR:'📐', BIOCONTROLE:'🌱', AUTRE:'🧪' };
+  const icon = icons[p.fonction] || '🧪';
+ 
+  const statusClass = p.statut?.includes('Autorisé') ? 'badge-green' : 'badge-red';
+  const usageCount = DB.usages.filter(u => u.amm === p.amm).length;
+ 
+  div.innerHTML = `
+    <div class="product-card-icon">${icon}</div>
+    <div class="product-card-body">
+      <div class="product-name">${p.nom}</div>
+      <div class="product-meta">
+        <span>AMM ${p.amm}</span>
+        <span>${p.titulaire || ''}</span>
+      </div>
+      <div class="product-badges" style="margin-top:5px">
+        <span class="badge ${getFonctionBadge(p.fonction)}">${p.fonction}</span>
+        <span class="badge ${statusClass}">${p.statut || '—'}</span>
+        ${p.ab ? '<span class="badge badge-green">🌿 AB</span>' : ''}
+        ${p.biocontrol ? '<span class="badge badge-green">🔬 Biocontrôle</span>' : ''}
+        ${p.abeille ? '<span class="badge badge-amber">🐝 Abeille</span>' : ''}
+        ${usageCount ? `<span class="badge badge-gray">${usageCount} usage${usageCount>1?'s':''}</span>` : ''}
+      </div>
+    </div>
+    <svg class="chevron" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+  `;
+  return div;
+}
+ 
+function getFonctionBadge(fn) {
+  if (fn === 'FONGICIDE') return 'badge-blue';
+  if (fn === 'HERBICIDE') return 'badge-green';
+  if (fn === 'INSECTICIDE') return 'badge-amber';
+  return 'badge-gray';
+}
+ 
+// ══════════════════════════════════════════════════════
+// PRODUCT DETAIL
+// ══════════════════════════════════════════════════════
+ 
+function openDetail(amm) {
+  const p = DB.produits.find(x => x.amm === amm);
+  if (!p) return;
+ 
+  const usages = DB.usages.filter(u => u.amm === amm);
+ 
+  document.getElementById('detail-title').textContent = p.nom;
+  const body = document.getElementById('detail-body');
+  body.innerHTML = '';
+ 
+  // === IDENTITÉ ===
+  const idSection = section('🪪 Identification');
+  idSection.querySelector('.detail-section-header').after(createGrid([
+    ['N° AMM', p.amm],
+    ['Statut', p.statut || '—'],
+    ['Fonction', p.fonction],
+    ['Gamme', p.gamme || '—'],
+    ['Titulaire', p.titulaire || '—'],
+    ['Mentions', [p.ab?'AB':'', p.biocontrol?'Biocontrôle':'', p.abeille?'🐝 Abeilles':''].filter(Boolean).join(', ') || '—'],
+  ]));
+  body.appendChild(idSection);
+ 
+  // === ALERTES ===
+  if (p.abeille) {
+    const a = document.createElement('div');
+    a.className = 'alert-box alert-amber';
+    a.innerHTML = '⚠️ <span><strong>Mention abeille</strong> — Ne pas appliquer en période de floraison ou en présence d\'abeilles actives. Respecter les conditions d\'emploi.</span>';
+    body.appendChild(a);
+  }
+ 
+  // === USAGES ===
+  if (usages.length) {
+    const usSection = section(`🌾 Usages homologués (${usages.length})`);
+    const usBody = document.createElement('div');
+    usages.forEach(u => {
+      const item = document.createElement('div');
+      item.className = 'usage-item';
+ 
+      const doseStr = u.dose_min && u.dose_min !== u.dose
+        ? `${u.dose_min} – ${u.dose} ${u.unite}`
+        : `${u.dose} ${u.unite}`;
+ 
+      const alerts = [];
+      if (u.dar) alerts.push(`<span class="badge badge-amber">DAR ${u.dar}j</span>`);
+      if (u.dre) alerts.push(`<span class="badge badge-gray">DRE ${u.dre}h</span>`);
+      if (u.znt) alerts.push(`<span class="badge badge-blue">ZNT ${u.znt}m</span>`);
+      const statusClass = u.statut_usage === 'Autorisé' ? 'badge-green' : 'badge-red';
+      alerts.push(`<span class="badge ${statusClass}">${u.statut_usage || 'Autorisé'}</span>`);
+ 
+      item.innerHTML = `
+        <div class="usage-culture">${u.culture}</div>
+        <div class="usage-target">🎯 ${u.cible}</div>
+        <div class="usage-dose">Dose : <strong>${doseStr}</strong></div>
+        <div class="usage-meta">${alerts.join('')}</div>
+      `;
+      usBody.appendChild(item);
+    });
+    usSection.appendChild(usBody);
+    body.appendChild(usSection);
+  }
+ 
+  // === LÉGENDE ===
+  const legSection = section('📖 Légende');
+  legSection.querySelector('.detail-section-header').after((() => {
+    const d = document.createElement('div');
+    d.className = 'detail-full';
+    d.innerHTML = `<div style="display:flex;flex-direction:column;gap:6px;font-size:0.82rem;color:var(--ink-mid)">
+      <div><span class="badge badge-amber">DAR</span> Délai Avant Récolte (jours)</div>
+      <div><span class="badge badge-gray">DRE</span> Délai de Rentrée dans la parcelle (heures)</div>
+      <div><span class="badge badge-blue">ZNT</span> Zone Non Traitée — cours d'eau (mètres)</div>
+    </div>`;
+    return d;
+  })());
+  body.appendChild(legSection);
+ 
+  // Open panel
+  document.getElementById('detail-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+ 
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+ 
+function section(title) {
+  const div = document.createElement('div');
+  div.className = 'detail-section';
+  const hdr = document.createElement('div');
+  hdr.className = 'detail-section-header';
+  hdr.textContent = title;
+  div.appendChild(hdr);
+  return div;
+}
+ 
+function createGrid(fields) {
+  const grid = document.createElement('div');
+  grid.className = 'detail-grid';
+  fields.forEach(([label, val]) => {
+    const f = document.createElement('div');
+    f.className = 'detail-field';
+    f.innerHTML = `<div class="detail-field-label">${label}</div><div class="detail-field-value">${val}</div>`;
+    grid.appendChild(f);
+  });
+  return grid;
+}
+ 
+// ══════════════════════════════════════════════════════
+// IFT
+// ══════════════════════════════════════════════════════
+ 
+function calcIFT() {
+  const dose = parseFloat(document.getElementById('ift-dose').value);
+  const doseRef = parseFloat(document.getElementById('ift-dose-ref').value);
+  const surface = parseFloat(document.getElementById('ift-surface').value);
+  const total = parseFloat(document.getElementById('ift-total').value);
+ 
+  const result = document.getElementById('ift-result');
+  const valueEl = document.getElementById('ift-value');
+  const detailEl = document.getElementById('ift-detail');
+ 
+  if (isNaN(dose) || isNaN(doseRef) || doseRef === 0) {
+    valueEl.textContent = '⚠️';
+    detailEl.textContent = 'Dose et dose de référence requises';
+    result.style.display = 'block';
+    return;
+  }
+ 
+  const ift = (dose / doseRef) * (isNaN(surface) || isNaN(total) || total === 0 ? 1 : surface / total);
+  valueEl.textContent = ift.toFixed(3);
+ 
+  const pct = Math.round((dose / doseRef) * 100);
+  const detail = isNaN(surface) || isNaN(total)
+    ? `Dose à ${pct}% de la dose homologuée`
+    : `Dose à ${pct}% × ${surface}ha sur ${total}ha`;
+  detailEl.textContent = detail;
+  result.style.display = 'block';
+ 
+  result.style.background = ift > 1 ? 'var(--amber-light)' : ift > 0.5 ? 'var(--green-pale)' : '#e8f0fb';
+}
+ 
+// ══════════════════════════════════════════════════════
+// SWIPE TO CLOSE DETAIL
+// ══════════════════════════════════════════════════════
+let touchStartX = 0;
+document.getElementById('detail-panel').addEventListener('touchstart', e => {
+  touchStartX = e.changedTouches[0].screenX;
+}, { passive: true });
+document.getElementById('detail-panel').addEventListener('touchend', e => {
+  if (e.changedTouches[0].screenX - touchStartX > 80) closeDetail();
+}, { passive: true });
+ 
+// ══════════════════════════════════════════════════════
+// START
+// ══════════════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>
+ 
